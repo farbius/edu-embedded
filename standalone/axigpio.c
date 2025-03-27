@@ -3,8 +3,16 @@
 #include "xscugic.h"
 #include "xil_printf.h"
 #include "sleep.h"
+#include "stdio.h"
 
+#define USE_INTERRUPT_MODE 0  // 1 = interrupt mode, 0 = polling mode
 #define XPAR_FABRIC_AXI_GPIO_0_IP2INTC_IRPT_INTR (XPAR_FABRIC_AXI_GPIO_0_INTR + 32U)
+
+
+volatile uint32_t *global_timer = (volatile uint32_t *)(XPAR_GLOBAL_TIMER_BASEADDR + 0x00);
+volatile uint32_t start_time = 0;
+volatile uint32_t end_time = 0;
+volatile int irq_handled = 0;
 
 typedef union {
     struct {
@@ -64,10 +72,16 @@ XScuGic Intc;
 
 void GpioHandler()
 {
+    
     static int idx = 0;
 	xil_printf("[EVENT] push button interrupt %d \n\r", idx);
     idx = idx + 1;
+    start_time = *global_timer;
     gpio_inst->isr.bits.chnl_1 = 1;
+    end_time = *global_timer;
+    float latency_us = (float)(end_time - start_time) / 650.0;
+    printf("[EVENT] Latency = %u cycles = %.2f us \n\r", end_time - start_time, latency_us);
+     irq_handled = 1;
 }
 
 int SetupIntrSystem();
@@ -75,38 +89,51 @@ int SetupIntrSystem();
 int main()
 { 
     xil_printf("[INFO] Start Application \n\r");
-    
-   
 
     gpio_inst->gpio2_data.bits.pin_0 = 1;
     gpio_inst->gpio2_data.bits.pin_1 = 0;
     gpio_inst->gpio2_data.bits.pin_2 = 0;
     gpio_inst->gpio2_data.bits.pin_3 = 1;
 
-
-    int Status = SetupIntrSystem();
-    if(Status != 0)
-        xil_printf("[ERROR] Interrupt initialization error \n\r");
+#if USE_INTERRUPT_MODE == 0
+    xil_printf("[INFO] Polled Mode \n\r");
 
     gpio_inst->ier.bits.chnl_1 = 1;
     gpio_inst->ier.bits.chnl_2 = 0;
     gpio_inst->gier.bits.gie = 1;
-    int watchdog = 10000000;
-    while(watchdog != 0)
+
+    while(1)
     {
-       // xil_printf("[INFO] gpio_inst->gpio2_data 0x%2x \n\r", gpio_inst->gpio_data.word);
-        usleep(1);
-        watchdog --;
-        
+        if (gpio_inst->isr.bits.chnl_1 == 1) {
+            gpio_inst->isr.bits.chnl_1 = 1; // Acknowledge
+            xil_printf("[POLL] Button press detected!\n\r");
+            break;
+        }        
+    }
+#else
+    xil_printf("[INFO] Interrupt Mode \n\r");
+
+    int Status = SetupIntrSystem();
+    if(Status != 0) {
+        xil_printf("[ERROR] Interrupt initialization error \n\r");
+        return -1;
     }
 
+    gpio_inst->ier.bits.chnl_1 = 1;
+    gpio_inst->ier.bits.chnl_2 = 0;
+    gpio_inst->gier.bits.gie = 1;
+
+    while (!irq_handled) {
+        usleep(1);
+    }
+#endif
+
     gpio_inst->gpio2_data.word = 0;
-    
+
     xil_printf("[INFO] End Application \n\r");
-
-
     return 0;
 }
+
 
 
 int SetupIntrSystem()
