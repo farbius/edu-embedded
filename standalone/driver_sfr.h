@@ -13,7 +13,7 @@ typedef union {
 typedef union {
 	struct {
 		uint32_t chnl_1 : 1;
-		uint32_t chnl_2 : 2;
+		uint32_t chnl_2 : 1;
 		uint32_t rsvd : 30;
 	} bits;
 	uint32_t word;
@@ -22,7 +22,7 @@ typedef union {
 typedef union {
 	struct {
 		uint32_t chnl_1 : 1;
-		uint32_t chnl_2 : 2;
+		uint32_t chnl_2 : 1;
 		uint32_t rsvd : 30;
 	} bits;
 	uint32_t word;
@@ -42,7 +42,7 @@ typedef union {
 typedef struct {
 	pins_t chnl1_data;
 	pins_t chnl1_tri;
-	pins_t cnhl2_data;
+	pins_t chnl2_data;
 	pins_t chnl2_tri;
 	uint32_t rsvd[67];
 	gier_t 	gier;
