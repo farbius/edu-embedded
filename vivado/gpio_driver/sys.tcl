@@ -753,7 +753,12 @@ proc create_root_design { parentCell } {
   # Create instance: axi_gpio_0, and set properties
   set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
   set_property -dict [list \
+    CONFIG.C_ALL_INPUTS {1} \
+    CONFIG.C_ALL_OUTPUTS_2 {1} \
+    CONFIG.C_GPIO2_WIDTH {4} \
+    CONFIG.C_GPIO_WIDTH {4} \
     CONFIG.C_INTERRUPT_PRESENT {1} \
+    CONFIG.C_IS_DUAL {1} \
     CONFIG.GPIO2_BOARD_INTERFACE {Custom} \
     CONFIG.GPIO_BOARD_INTERFACE {Custom} \
     CONFIG.USE_BOARD_FLOW {true} \
@@ -765,8 +770,8 @@ proc create_root_design { parentCell } {
   set_property CONFIG.NUM_SI {1} $axi_smc
 
 
-  # Create instance: rst_ps7_0_100M, and set properties
-  set rst_ps7_0_100M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_100M ]
+  # Create instance: rst_ps7_0_50M, and set properties
+  set rst_ps7_0_50M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_50M ]
 
   # Create instance: system_ila_0, and set properties
   set system_ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila:1.1 system_ila_0 ]
@@ -782,9 +787,12 @@ proc create_root_design { parentCell } {
   # Create instance: axi_gpio_1, and set properties
   set axi_gpio_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_1 ]
   set_property -dict [list \
+    CONFIG.C_ALL_INPUTS {1} \
+    CONFIG.C_ALL_OUTPUTS_2 {1} \
     CONFIG.C_GPIO2_WIDTH {4} \
     CONFIG.C_GPIO_WIDTH {4} \
     CONFIG.C_INTERRUPT_PRESENT {1} \
+    CONFIG.C_IS_DUAL {1} \
     CONFIG.GPIO2_BOARD_INTERFACE {Custom} \
     CONFIG.GPIO_BOARD_INTERFACE {Custom} \
     CONFIG.USE_BOARD_FLOW {true} \
@@ -832,7 +840,7 @@ connect_bd_intf_net -intf_net [get_bd_intf_nets axi_smc_M00_AXI] [get_bd_intf_pi
   [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] \
   [get_bd_pins axi_smc/aclk] \
   [get_bd_pins axi_gpio_0/s_axi_aclk] \
-  [get_bd_pins rst_ps7_0_100M/slowest_sync_clk] \
+  [get_bd_pins rst_ps7_0_50M/slowest_sync_clk] \
   [get_bd_pins system_ila_0/clk]
   connect_bd_net -net processing_system7_0_FCLK_CLK1  [get_bd_pins processing_system7_0/FCLK_CLK1] \
   [get_bd_pins axi_smc_1/aclk] \
@@ -841,9 +849,9 @@ connect_bd_intf_net -intf_net [get_bd_intf_nets axi_smc_M00_AXI] [get_bd_intf_pi
   [get_bd_pins rst_ps7_0_250M/slowest_sync_clk] \
   [get_bd_pins system_ila_1/clk]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N  [get_bd_pins processing_system7_0/FCLK_RESET0_N] \
-  [get_bd_pins rst_ps7_0_100M/ext_reset_in] \
+  [get_bd_pins rst_ps7_0_50M/ext_reset_in] \
   [get_bd_pins rst_ps7_0_250M/ext_reset_in]
-  connect_bd_net -net rst_ps7_0_100M_peripheral_aresetn  [get_bd_pins rst_ps7_0_100M/peripheral_aresetn] \
+  connect_bd_net -net rst_ps7_0_100M_peripheral_aresetn  [get_bd_pins rst_ps7_0_50M/peripheral_aresetn] \
   [get_bd_pins axi_gpio_0/s_axi_aresetn] \
   [get_bd_pins axi_smc/aresetn] \
   [get_bd_pins system_ila_0/resetn]
