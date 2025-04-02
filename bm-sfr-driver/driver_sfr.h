@@ -30,14 +30,13 @@ typedef union {
 
 typedef union {
 	struct {
-		uint32_t pin_0 : 1;
-		uint32_t pin_1 : 1;
-		uint32_t pin_2 : 1;
-		uint32_t pin_3 : 1;
+		uint32_t pins : 4;
 		uint32_t rsvd : 28;
 	} bits;
 	uint32_t word;
 } pins_t;
+
+
 
 typedef struct {
 	pins_t chnl1_data;

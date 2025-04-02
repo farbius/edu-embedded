@@ -20,6 +20,12 @@ volatile int irq_handled = 0;
 XScuGic Intc;
 _IO driver_sfr_t *gpio_inst;
 
+void enable_global_timer()
+{
+    volatile uint32_t *cntcr = (volatile uint32_t *)(XPAR_GLOBAL_TIMER_BASEADDR + 0x08);
+    *cntcr |= 0x1;  // bit 0: ENABLE
+}
+
 
 void GpioHandler()
 {
@@ -32,9 +38,13 @@ int SetupIntrSystem();
 int main()
 {
 	xil_printf("[INFO] Start Application \n\r");
-
+    enable_global_timer();
     drv_init(&gpio_inst, XPAR_AXI_GPIO_BASEADDR);
     xil_printf("[INFO] gpio0_inst %p \n\r", gpio_inst);
+    drv_inout(gpio_inst, 0, 0); // channel 0 as output
+    drv_inout(gpio_inst, 1, 1); // channel 1 as input
+    drv_ieren(gpio_inst, 1); 
+    
     uint32_t total = 0;
     pins_t leds;
     leds.word = 0;
@@ -44,12 +54,12 @@ int main()
     for(int idx = 0; idx < INTERATIONS; idx = idx + 1)
     {
         leds.word ++;
-        drv_write(gpio_inst,  2, leds);
+        drv_write(gpio_inst,  0, leds);
         start_time = *global_timer;
         drv_readb(gpio_inst, 1, &leds);
         end_time = *global_timer;
         total += (end_time - start_time);
-        msleep(1);
+        usleep(1);
     }
     printf("[INFO] Polled Mode Time = %.2f ns \n\r", (float)(total*1000)/INTERATIONS/650);
 
@@ -63,14 +73,14 @@ int main()
     for(int idx = 0; idx < INTERATIONS; idx = idx + 1)
     {
         leds.word ++;
-        drv_write(gpio_inst,  2, leds);
+        drv_write(gpio_inst,  0, leds);
         start_time = *global_timer;
         while (!irq_handled) {   }
         irq_handled = 0;
-        leds = gpio_inst->chnl1_data;
+        drv_readn(gpio_inst, 1, &leds);
         end_time = *global_timer;
         total += (end_time - start_time);
-        msleep(1);
+        usleep(1);
     }
     printf("[INFO] Interrupt Mode Time = %.2f ns \n\r", (float)(total*1000)/INTERATIONS/650);
 

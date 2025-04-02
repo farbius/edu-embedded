@@ -207,9 +207,9 @@ proc create_root_design { parentCell } {
 
   set jb_n [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:gpio_rtl:1.0 jb_n ]
 
-  set ja_n [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:gpio_rtl:1.0 ja_n ]
-
   set ja_p [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:gpio_rtl:1.0 ja_p ]
+
+  set ja_n [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:gpio_rtl:1.0 ja_n ]
 
 
   # Create ports
@@ -753,8 +753,8 @@ proc create_root_design { parentCell } {
   # Create instance: axi_gpio_0, and set properties
   set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
   set_property -dict [list \
-    CONFIG.C_ALL_INPUTS {1} \
-    CONFIG.C_ALL_OUTPUTS_2 {1} \
+    CONFIG.C_ALL_INPUTS {0} \
+    CONFIG.C_ALL_OUTPUTS_2 {0} \
     CONFIG.C_GPIO2_WIDTH {4} \
     CONFIG.C_GPIO_WIDTH {4} \
     CONFIG.C_INTERRUPT_PRESENT {1} \
@@ -776,8 +776,9 @@ proc create_root_design { parentCell } {
   # Create instance: system_ila_0, and set properties
   set system_ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila:1.1 system_ila_0 ]
   set_property -dict [list \
-    CONFIG.C_DATA_DEPTH {2048} \
+    CONFIG.C_DATA_DEPTH {1024} \
     CONFIG.C_MON_TYPE {MIX} \
+    CONFIG.C_NUM_MONITOR_SLOTS {2} \
   ] $system_ila_0
 
 
@@ -787,8 +788,8 @@ proc create_root_design { parentCell } {
   # Create instance: axi_gpio_1, and set properties
   set axi_gpio_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_1 ]
   set_property -dict [list \
-    CONFIG.C_ALL_INPUTS {1} \
-    CONFIG.C_ALL_OUTPUTS_2 {1} \
+    CONFIG.C_ALL_INPUTS {0} \
+    CONFIG.C_ALL_OUTPUTS_2 {0} \
     CONFIG.C_GPIO2_WIDTH {4} \
     CONFIG.C_GPIO_WIDTH {4} \
     CONFIG.C_INTERRUPT_PRESENT {1} \
@@ -810,8 +811,9 @@ proc create_root_design { parentCell } {
   # Create instance: system_ila_1, and set properties
   set system_ila_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila:1.1 system_ila_1 ]
   set_property -dict [list \
-    CONFIG.C_DATA_DEPTH {2048} \
+    CONFIG.C_DATA_DEPTH {1024} \
     CONFIG.C_MON_TYPE {MIX} \
+    CONFIG.C_NUM_MONITOR_SLOTS {2} \
   ] $system_ila_1
 
 
@@ -827,7 +829,9 @@ connect_bd_intf_net -intf_net [get_bd_intf_nets axi_smc_M00_AXI] [get_bd_intf_pi
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins axi_smc/S00_AXI]
+connect_bd_intf_net -intf_net [get_bd_intf_nets processing_system7_0_M_AXI_GP0] [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins system_ila_0/SLOT_1_AXI]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP1 [get_bd_intf_pins processing_system7_0/M_AXI_GP1] [get_bd_intf_pins axi_smc_1/S00_AXI]
+connect_bd_intf_net -intf_net [get_bd_intf_nets processing_system7_0_M_AXI_GP1] [get_bd_intf_pins processing_system7_0/M_AXI_GP1] [get_bd_intf_pins system_ila_1/SLOT_1_AXI]
 
   # Create port connections
   connect_bd_net -net axi_gpio_0_ip2intc_irpt  [get_bd_pins axi_gpio_0/ip2intc_irpt] \
